@@ -1,0 +1,149 @@
+version: '3.8'
+
+networks:
+  storage-network:
+    driver: bridge
+
+volumes:
+  storage1-data:
+  storage2-data:
+  storage3-data:
+  storage4-data:
+  coordinator-data:
+  prometheus-data:
+  grafana-data:
+
+services:
+  coordinator:
+    build: 
+      context: ./backend
+      dockerfile: coordinator/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - SERVICE_NAME=coordinator
+    volumes:
+      - coordinator-data:/app/data
+      - ./backend/shared:/app/shared
+    networks:
+      - storage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  controller:
+    build: 
+      context: ./backend
+      dockerfile: controller/Dockerfile
+    environment:
+      - SERVICE_NAME=controller
+    env_file:
+      - ./backend/.env.example
+    networks:
+      - storage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  storage1:
+    build: 
+      context: ./backend
+      dockerfile: storage_node/Dockerfile
+    ports:
+      - "8001:8000"
+    environment:
+      - SERVICE_NAME=storage1
+      - NODE_ID=storage1
+      - COORDINATOR_URL=http://coordinator:8000
+    volumes:
+      - storage1-data:/app/data
+    networks:
+      - storage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  storage2:
+    build: 
+      context: ./backend
+      dockerfile: storage_node/Dockerfile
+    ports:
+      - "8002:8000"
+    environment:
+      - SERVICE_NAME=storage2
+      - NODE_ID=storage2
+      - COORDINATOR_URL=http://coordinator:8000
+    volumes:
+      - storage2-data:/app/data
+    networks:
+      - storage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  storage3:
+    build: 
+      context: ./backend
+      dockerfile: storage_node/Dockerfile
+    ports:
+      - "8003:8000"
+    environment:
+      - SERVICE_NAME=storage3
+      - NODE_ID=storage3
+      - COORDINATOR_URL=http://coordinator:8000
+    volumes:
+      - storage3-data:/app/data
+    networks:
+      - storage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  storage4:
+    build: 
+      context: ./backend
+      dockerfile: storage_node/Dockerfile
+    ports:
+      - "8004:8000"
+    environment:
+      - SERVICE_NAME=storage4
+      - NODE_ID=storage4
+      - COORDINATOR_URL=http://coordinator:8000
+    volumes:
+      - storage4-data:/app/data
+    networks:
+      - storage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./backend/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - storage-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - storage-network

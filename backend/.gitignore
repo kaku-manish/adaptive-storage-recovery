@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# Runtime storage & database files
+data/
+*.db
+*.sqlite3
+*.blk
+*.log
+client/report_*.html
+
+# Environment
+.env
+!.env.example

@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'storage'
+    static_configs:
+      - targets: ['storage1:8000', 'storage2:8000', 'storage3:8000', 'storage4:8000']
+  - job_name: 'coordinator'
+    static_configs:
+      - targets: ['coordinator:8000']
+  - job_name: 'controller'
+    static_configs:
+      - targets: ['controller:8000']
